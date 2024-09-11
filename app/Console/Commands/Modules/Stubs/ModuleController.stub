@@ -1,0 +1,80 @@
+<?php
+
+namespace DummyNamespace;
+
+use App\Http\Requests\DummyModelStoreRequest;
+use App\Http\Resources\DummyModelResource;
+use App\Repositories\DummyModelRepository;
+use App\Traits\GenericApiService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class DummyClass extends Controller
+{
+    use GenericApiService;
+
+    protected DummyModelRepository $repository;
+
+    public function __construct(DummyModelRepository $DummyModelRepository)
+    {
+        $this->repository = $DummyModelRepository;
+    }
+
+    public function index(Request $request): JsonResponse
+    {
+        $perPage = $request->input('per_page', 15);
+        $profileId = $request->input('profile_id', false);
+
+        $DummyModelObject = $this->repository->getProfile($profileId)->paginate($perPage);
+
+        if ($DummyModelObject->isEmpty()) {
+            return $this->sendError(__('No DummyModels found'), 404);
+        }
+
+        return $this->sendResponsePagination(DummyModelResource::collection($DummyModelObject), __('DummyModels retrieved successfully'));
+    }
+
+    public function store(DummyModelStoreRequest $request): JsonResponse
+    {
+        $data = $this->repository->store($request->validated());
+        return $this->sendResponse(new DummyModelResource($data), __('DummyModel created successfully'));
+    }
+
+    public function show($id): JsonResponse
+    {
+        $DummyModelObject = $this->repository->getById($id);
+
+        if (!$DummyModelObject) {
+            return $this->sendError(__('DummyModel not found'), 404);
+        }
+
+        return $this->sendResponse(new DummyModelResource($DummyModelObject), __('DummyModel retrieved successfully'));
+    }
+
+    public function update(DummyModelStoreRequest $request, $id): JsonResponse
+    {
+        $DummyModelObject = $this->repository->getById($id);
+
+        if (!$DummyModelObject) {
+            return $this->sendError(__('DummyModel not found'), 404);
+        }
+
+        $DummyModelObject->fill($request->validated());
+        $DummyModelObject->save();
+
+        return $this->sendResponse(new DummyModelResource($DummyModelObject), __('DummyModel updated successfully'));
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $DummyModelObject = $this->repository->getById($id);
+
+        if (!$DummyModelObject) {
+            return $this->sendError(__('DummyModel not found'), 404);
+        }
+
+        $this->repository->delete($DummyModelObject);
+
+        return $this->sendResponse(null, __('DummyModel deleted successfully'));
+    }
+}
