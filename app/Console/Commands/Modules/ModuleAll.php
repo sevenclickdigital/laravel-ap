@@ -96,6 +96,7 @@ class ModuleAll extends Command
         $this->info('Reminders:');
         $this->info('');
         $this->info('In -->> routes\api.php');
+        $this->info('In -->> routes\web.php');
         $this->info('');
         $this->info("/**");
         $this->info("* " . Str::plural($model) . "");
